@@ -23,6 +23,7 @@ Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 
 - Side-by-side file comparison; long lines wrap on both sides without breaking row alignment
 - Word-level highlighting inside changed lines
+- Syntax coloring for 24 languages (detected from the file name, or pick one from the Language menu)
 - Next/Previous change (⌘↓ / ⌘↑), Take Left / Take Right per change (⌥⌘→ / ⌥⌘←) with Undo, Save (⌘S)
 - Folder comparison: identical / different / left only / right only, differences-only filter, drill into files
 - Comparison options: whitespace (exact, trailing, changes, all), ignore case, ignore blank lines
@@ -39,6 +40,7 @@ Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 | `Sources/DiffCore/Myers.swift` | Myers O(ND) diff with the linear-space bisect refinement, on integer tokens |
 | `Sources/DiffCore/LineDiff.swift` | Line splitting, normalization options, aligned rows and hunks, intra-line highlights, unified diff output |
 | `Sources/DiffCore/FolderCompare.swift` | Recursive folder comparison with content compare and cancellation |
+| `Sources/DiffCore/Syntax.swift` | Language definitions and the line-state tokenizer behind syntax coloring |
 | `Sources/Diffline/DifflineApp.swift` | App entry, app delegate (open URLs, Services provider), start window scene |
 | `Sources/Diffline/WindowManager.swift` | AppKit comparison windows, key-window tracking for menu commands |
 | `Sources/Diffline/FileCompareSession.swift` | Per-window state: files, diff, navigation, merge with undo, save, export |

@@ -70,6 +70,14 @@ struct DifflineCommands: Commands {
             Toggle("Ignore Blank Lines", isOn: Binding(get: { file?.options.ignoreBlankLines ?? false }, set: { file?.options.ignoreBlankLines = $0 }))
                 .disabled(file == nil)
             Divider()
+            Toggle("Syntax Highlighting", isOn: Binding(get: { file?.syntaxHighlighting ?? UserDefaults.standard.bool(forKey: Prefs.syntaxHighlighting) },
+                                                        set: { file?.syntaxHighlighting = $0 }))
+                .keyboardShortcut("h", modifiers: [.command, .option])
+                .disabled(file == nil)
+            if let file {
+                LanguageMenu(session: file)
+            }
+            Divider()
             Button("Compare Again") {
                 if let f = file { f.reload() } else { app.folderSession?.run() }
             }

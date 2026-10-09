@@ -38,6 +38,7 @@ LISTING = {
         "changes, take the left or right version of each one, and save. Compare two folders to see which "
         "files were added, removed or modified, then double-click any file to open it.\n\n"
         "• Side-by-side comparison with word-level highlighting\n"
+        "• Syntax coloring for Swift, Python, JavaScript, Go, Rust, C, JSON, YAML, HTML, Markdown and more\n"
         "• Merge: take the left or right version of each change, with Undo\n"
         "• Folder comparison with recursive status for every file\n"
         "• Ignore whitespace, case or blank lines\n"
@@ -48,7 +49,7 @@ LISTING = {
         "Everything runs on your Mac. No accounts, no tracking, no network access."
     ),
     "promotionalText": "A native diff and merge tool for the Mac. Buy it once.",
-    "keywords": "diff,compare,merge,folder,files,text,code,difference,patch,developer",
+    "keywords": "diff,compare,merge,folder,files,text,code,difference,patch,syntax",
     "supportUrl": "https://github.com/patbonecrusher/diffline/issues",
     "marketingUrl": "https://patbonecrusher.github.io/diffline/",
     "whatsNew": None,          # not allowed on the first version

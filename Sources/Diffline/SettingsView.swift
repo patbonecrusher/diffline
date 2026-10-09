@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.fontSize) private var fontSize = 12.0
     @AppStorage(Prefs.tabWidth) private var tabWidth = 4
     @AppStorage(Prefs.wrapLines) private var wrapLines = true
+    @AppStorage(Prefs.syntaxHighlighting) private var syntaxHighlighting = true
     @AppStorage(Prefs.whitespace) private var whitespace = DiffOptions.Whitespace.exact.rawValue
     @AppStorage(Prefs.ignoreCase) private var ignoreCase = false
     @AppStorage(Prefs.ignoreBlankLines) private var ignoreBlankLines = false
@@ -16,6 +17,7 @@ struct SettingsView: View {
                 Slider(value: $fontSize, in: 9...20, step: 1) { Text("Font size: \(Int(fontSize)) pt") }
                 Stepper("Tab width: \(tabWidth)", value: $tabWidth, in: 1...16)
                 Toggle("Wrap long lines", isOn: $wrapLines)
+                Toggle("Syntax highlighting", isOn: $syntaxHighlighting)
             }
             Section("Defaults for new comparisons") {
                 Picker("Whitespace", selection: $whitespace) {

@@ -60,6 +60,9 @@ struct FileCompareView: View {
                 Divider()
                 Toggle("Ignore Case", isOn: $session.options.ignoreCase)
                 Toggle("Ignore Blank Lines", isOn: $session.options.ignoreBlankLines)
+                Divider()
+                Toggle("Syntax Highlighting", isOn: $session.syntaxHighlighting)
+                LanguageMenu(session: session)
             } label: {
                 Label("Options", systemImage: "line.3.horizontal.decrease.circle")
             }
@@ -142,5 +145,32 @@ struct FileCompareView: View {
         .padding(.horizontal, 10)
         .frame(height: 22)
         .background(.bar)
+    }
+}
+
+
+/// "Language" submenu: Automatic, Plain Text, then every known language.
+struct LanguageMenu: View {
+    @ObservedObject var session: FileCompareSession
+
+    var body: some View {
+        Menu(session.languageOverride.map { "Language: \($0.name)" } ?? "Language: Automatic") {
+            Picker("Language", selection: $session.languageOverride) {
+                Text(automaticTitle).tag(Language?.none)
+                Divider()
+                ForEach(Language.all, id: \.name) { lang in
+                    Text(lang.name).tag(Language?.some(lang))
+                }
+            }
+            .pickerStyle(.inline)
+        }
+        .disabled(!session.syntaxHighlighting)
+    }
+
+    private var automaticTitle: String {
+        if let detected = Language.detect(filename: session.left.name) ?? Language.detect(filename: session.right.name) {
+            return "Automatic (\(detected.name))"
+        }
+        return "Automatic (Plain Text)"
     }
 }

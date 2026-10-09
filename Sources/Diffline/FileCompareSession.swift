@@ -9,6 +9,11 @@ final class FileCompareSession: ObservableObject {
     @Published private(set) var right: TextFile
     @Published var options: DiffOptions { didSet { if options != oldValue { recompute() } } }
     @Published var wrapLines: Bool
+    @Published var syntaxHighlighting: Bool { didSet { if syntaxHighlighting != oldValue { recompute() } } }
+    /// nil = detect from the file name; set from the Language menu to force one.
+    @Published var languageOverride: Language? { didSet { if languageOverride != oldValue { recompute() } } }
+    @Published private(set) var leftTokens: [[SyntaxToken]] = []
+    @Published private(set) var rightTokens: [[SyntaxToken]] = []
     @Published private(set) var result: LineDiffResult?
     @Published private(set) var displayLeft: [String] = []
     @Published private(set) var displayRight: [String] = []
@@ -28,6 +33,7 @@ final class FileCompareSession: ObservableObject {
         self.right = right
         self.options = Prefs.defaultDiffOptions
         self.wrapLines = UserDefaults.standard.bool(forKey: Prefs.wrapLines)
+        self.syntaxHighlighting = UserDefaults.standard.bool(forKey: Prefs.syntaxHighlighting)
         recompute()
     }
 
@@ -36,6 +42,10 @@ final class FileCompareSession: ObservableObject {
     }
 
     var title: String { "\(left.name) ↔ \(right.name)" }
+    var leftLanguage: Language? { languageOverride ?? Language.detect(filename: left.name) }
+    var rightLanguage: Language? { languageOverride ?? Language.detect(filename: right.name) ?? Language.detect(filename: left.name) }
+    /// What the Language menu shows as selected: the override, else the detected language of the left file.
+    var effectiveLanguage: Language? { leftLanguage ?? rightLanguage }
     var isBinary: Bool { left.isBinary || right.isBinary }
     var binaryIdentical: Bool { left.data == right.data }
     var hunkCount: Int { result?.hunks.count ?? 0 }
@@ -48,11 +58,16 @@ final class FileCompareSession: ObservableObject {
         guard !isBinary else { result = nil; return }
         let l = left.lines, r = right.lines, opts = options
         let gen = generation + 1
+        let langL = syntaxHighlighting ? leftLanguage : nil
+        let langR = syntaxHighlighting ? rightLanguage : nil
         isComputing = true
         computeTask = Task.detached(priority: .userInitiated) { [weak self] in
             var res = LineDiff.compare(l, r, options: opts, intraLine: false)
             let dl = l.map { TextFile.expandTabs($0, tabWidth: opts.tabWidth) }
             let dr = r.map { TextFile.expandTabs($0, tabWidth: opts.tabWidth) }
+            if Task.isCancelled { return }
+            let tl = langL.map { SyntaxHighlighter(language: $0).tokenize(lines: dl) } ?? []
+            let tr = langR.map { SyntaxHighlighter(language: $0).tokenize(lines: dr) } ?? []
             if Task.isCancelled { return }
             for i in res.rows.indices where res.rows[i].kind == .changed {
                 let (lh, rh) = IntraLine.highlights(Substring(dl[res.rows[i].left!]), Substring(dr[res.rows[i].right!]), options: opts)
@@ -66,6 +81,8 @@ final class FileCompareSession: ObservableObject {
                 self.result = final
                 self.displayLeft = dl
                 self.displayRight = dr
+                self.leftTokens = tl
+                self.rightTokens = tr
                 self.generation = gen
                 self.isComputing = false
                 if let cur = self.currentHunk, cur >= final.hunks.count { self.currentHunk = final.hunks.isEmpty ? nil : final.hunks.count - 1 }

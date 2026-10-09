@@ -5,6 +5,7 @@ enum Prefs {
     static let fontSize = "fontSize"
     static let tabWidth = "tabWidth"
     static let wrapLines = "wrapLines"
+    static let syntaxHighlighting = "syntaxHighlighting"
     static let whitespace = "whitespace"
     static let ignoreCase = "ignoreCase"
     static let ignoreBlankLines = "ignoreBlankLines"
@@ -17,6 +18,7 @@ enum Prefs {
             fontSize: 12.0,
             tabWidth: 4,
             wrapLines: true,
+            syntaxHighlighting: true,
             whitespace: DiffOptions.Whitespace.exact.rawValue,
             ignoreCase: false,
             ignoreBlankLines: false,

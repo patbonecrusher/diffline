@@ -230,3 +230,66 @@ final class AssembleTests: XCTestCase {
         XCTAssertEqual(hunks, [Hunk(rows: 1..<4, leftLines: 1..<3, rightLines: 1..<4)])
     }
 }
+
+final class SyntaxTests: XCTestCase {
+    private func kinds(_ lang: Language, _ lines: [String]) -> [[(TokenKind, String)]] {
+        SyntaxHighlighter(language: lang).tokenize(lines: lines).enumerated().map { i, toks in
+            toks.map { t in
+                let s = lines[i] as NSString
+                return (t.kind, s.substring(with: NSRange(location: t.range.lowerBound, length: t.range.count)))
+            }
+        }
+    }
+
+    func testSwiftLine() {
+        let t = kinds(.swift, ["let x = \"hi\\\"there\" // done", "@MainActor func f() -> Int { return 42 }"])
+        XCTAssertEqual(t[0].map(\.0), [.keyword, .string, .comment])
+        XCTAssertEqual(t[0][1].1, "\"hi\\\"there\"")
+        XCTAssertEqual(t[1].map { $0.1 }, ["@MainActor", "func", "Int", "return", "42"])
+    }
+
+    func testBlockCommentAcrossLines() {
+        let t = kinds(.c, ["int a; /* start", "still comment", "end */ int b;"])
+        XCTAssertEqual(t[0].map(\.0), [.keyword, .comment])
+        XCTAssertEqual(t[1].map(\.0), [.comment])
+        XCTAssertEqual(t[2].map(\.0), [.comment, .keyword])
+        XCTAssertEqual(t[2][0].1, "end */")
+    }
+
+    func testPythonTripleQuotedString() {
+        let t = kinds(.python, ["def f():", "    \"\"\"Doc", "    more\"\"\"", "    return None  # c"])
+        XCTAssertEqual(t[0].map(\.0), [.keyword])
+        XCTAssertEqual(t[1].map(\.0), [.string])
+        XCTAssertEqual(t[2].map(\.0), [.string])
+        XCTAssertEqual(t[3].map(\.0), [.keyword, .keyword, .comment])
+    }
+
+    func testJSONKeysAndValues() {
+        let t = kinds(.json, ["{\"name\": \"x\", \"n\": 3, \"ok\": true}"])
+        XCTAssertEqual(t[0].map(\.0), [.attribute, .string, .attribute, .number, .attribute, .keyword])
+    }
+
+    func testMarkup() {
+        let t = kinds(.markup, ["<a href=\"x\">hi</a> <!-- c -->"])
+        XCTAssertEqual(t[0].map(\.0), [.tag, .attribute, .string, .tag, .tag, .tag, .comment])
+    }
+
+    func testYAMLKeys() {
+        let t = kinds(.yaml, ["name: Build", "  runs-on: macos-15  # ci", "on: [push]"])
+        XCTAssertEqual(t[0].map { $0.1 }, ["name"])
+        XCTAssertEqual(t[1].map(\.0), [.attribute, .comment])
+        XCTAssertEqual(t[2].map { $0.1 }, ["on"])
+    }
+
+    func testShellVariableIsNotAComment() {
+        let t = kinds(.shell, ["echo \"$HOME\" $#  # comment"])
+        XCTAssertEqual(t[0].map(\.0), [.keyword, .string, .comment])
+    }
+
+    func testDetection() {
+        XCTAssertEqual(Language.detect(filename: "/x/y/Foo.swift"), .swift)
+        XCTAssertEqual(Language.detect(filename: "Makefile"), .makefile)
+        XCTAssertEqual(Language.detect(filename: "Package.swift"), .swift)
+        XCTAssertNil(Language.detect(filename: "notes.txt"))
+    }
+}

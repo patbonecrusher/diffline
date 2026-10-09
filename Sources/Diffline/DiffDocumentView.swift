@@ -17,6 +17,27 @@ enum DiffColors {
     static let lineNumber = NSColor.tertiaryLabelColor
     static let separator = NSColor.separatorColor
     static let background = NSColor.textBackgroundColor
+
+    // Syntax colors, in the spirit of Xcode's default themes.
+    static let keyword = dyn(NSColor(srgbRed: 0.61, green: 0.14, blue: 0.58, alpha: 1), NSColor(srgbRed: 0.99, green: 0.37, blue: 0.64, alpha: 1))
+    static let string = dyn(NSColor(srgbRed: 0.77, green: 0.10, blue: 0.09, alpha: 1), NSColor(srgbRed: 0.99, green: 0.42, blue: 0.36, alpha: 1))
+    static let comment = dyn(NSColor(srgbRed: 0.36, green: 0.42, blue: 0.47, alpha: 1), NSColor(srgbRed: 0.49, green: 0.55, blue: 0.60, alpha: 1))
+    static let number = dyn(NSColor(srgbRed: 0.11, green: 0.00, blue: 0.81, alpha: 1), NSColor(srgbRed: 0.82, green: 0.75, blue: 0.40, alpha: 1))
+    static let type = dyn(NSColor(srgbRed: 0.11, green: 0.44, blue: 0.56, alpha: 1), NSColor(srgbRed: 0.36, green: 0.85, blue: 1.00, alpha: 1))
+    static let attribute = dyn(NSColor(srgbRed: 0.60, green: 0.32, blue: 0.00, alpha: 1), NSColor(srgbRed: 0.99, green: 0.72, blue: 0.34, alpha: 1))
+    static let tag = dyn(NSColor(srgbRed: 0.11, green: 0.44, blue: 0.56, alpha: 1), NSColor(srgbRed: 0.36, green: 0.85, blue: 1.00, alpha: 1))
+
+    static func color(for kind: TokenKind) -> NSColor {
+        switch kind {
+        case .keyword: keyword
+        case .string: string
+        case .comment: comment
+        case .number: number
+        case .type: type
+        case .attribute: attribute
+        case .tag: tag
+        }
+    }
 }
 
 /// Draws an aligned side-by-side diff: line numbers, both panes and the merge gutter. Only the rows
@@ -33,6 +54,8 @@ final class DiffDocumentView: NSView {
     private var rightRaw: [Substring] = []
     private var leftLen: [Int] = []
     private var rightLen: [Int] = []
+    private var leftTokens: [[SyntaxToken]] = []
+    private var rightTokens: [[SyntaxToken]] = []
 
     var wrap = true { didSet { if wrap != oldValue { relayout() } } }
     var font: NSFont = Prefs.font { didSet { if font != oldValue { updateMetrics(); relayout() } } }
@@ -71,10 +94,12 @@ final class DiffDocumentView: NSView {
 
     // MARK: Data
 
-    func reload(rows: [DiffRow], hunks: [Hunk], left: [String], right: [String], leftRaw: [Substring], rightRaw: [Substring]) {
+    func reload(rows: [DiffRow], hunks: [Hunk], left: [String], right: [String], leftRaw: [Substring], rightRaw: [Substring],
+                leftTokens: [[SyntaxToken]] = [], rightTokens: [[SyntaxToken]] = []) {
         self.rows = rows; self.hunks = hunks
         self.leftText = left; self.rightText = right
         self.leftRaw = leftRaw; self.rightRaw = rightRaw
+        self.leftTokens = leftTokens; self.rightTokens = rightTokens
         leftLen = left.map(\.count)
         rightLen = right.map(\.count)
         maxChars = max(leftLen.max() ?? 0, rightLen.max() ?? 0)
@@ -258,6 +283,14 @@ final class DiffDocumentView: NSView {
         let text = side == .left ? leftText[lineIndex!] : rightText[lineIndex!]
         guard !text.isEmpty else { return }
         let attr = NSMutableAttributedString(string: text, attributes: baseAttributes())
+        let tokens = side == .left ? leftTokens : rightTokens
+        if let lineTokens = tokens[safe: lineIndex!] {
+            let length = attr.length
+            for t in lineTokens where t.range.lowerBound < length {
+                attr.addAttribute(.foregroundColor, value: DiffColors.color(for: t.kind),
+                                  range: NSRange(location: t.range.lowerBound, length: min(t.range.count, length - t.range.lowerBound)))
+            }
+        }
         let highlights = side == .left ? row.leftHighlights : row.rightHighlights
         if !highlights.isEmpty {
             let color = side == .left ? DiffColors.leftEmphasis : DiffColors.rightEmphasis

@@ -46,7 +46,8 @@ struct DiffPaneView: NSViewRepresentable {
         if context.coordinator.generation != session.generation, let result = session.result {
             context.coordinator.generation = session.generation
             doc.reload(rows: result.rows, hunks: result.hunks, left: session.displayLeft, right: session.displayRight,
-                       leftRaw: session.left.lines, rightRaw: session.right.lines)
+                       leftRaw: session.left.lines, rightRaw: session.right.lines,
+                       leftTokens: session.leftTokens, rightTokens: session.rightTokens)
         }
         doc.currentHunk = session.currentHunk
         if let h = session.scrollRequest {
