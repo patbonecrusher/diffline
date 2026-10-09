@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffline — Compare and merge files on your Mac</title>
+    <meta name="description" content="Diffline is a native macOS diff and merge tool. Side-by-side file comparison with word-level highlighting, folder comparison, and one-time purchase.">
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        :root { --bg: #15171c; --fg: #e7eaf0; --muted: #b9c0cc; --accent: #7fb0ff; --card: #1d2027; --red: #f28b7f; --green: #6fd39a; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; margin: 0; }
+        main { max-width: 960px; margin: 0 auto; padding: 4rem 1.5rem 5rem; }
+        header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1rem; }
+        header img { width: 96px; height: 96px; border-radius: 22px; }
+        h1 { font-size: 2.6rem; letter-spacing: -0.02em; margin: 0; }
+        .tagline { font-size: 1.25rem; color: var(--muted); margin: 0 0 2rem; }
+        .cta { display: inline-flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 3rem; }
+        .cta a { display: inline-block; padding: .7rem 1.2rem; border-radius: 10px; text-decoration: none; font-weight: 600; }
+        .cta .primary { background: var(--accent); color: #0b1220; }
+        .cta .secondary { background: var(--card); color: var(--fg); border: 1px solid #2d323c; }
+        .shots { display: grid; gap: 1.25rem; margin-bottom: 3rem; }
+        .shots img { width: 100%; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 3rem; }
+        .feature { background: var(--card); border: 1px solid #2d323c; border-radius: 12px; padding: 1.1rem 1.2rem; }
+        .feature h3 { margin: 0 0 .35rem; font-size: 1.05rem; }
+        .feature p { margin: 0; color: var(--muted); font-size: .95rem; }
+        footer { color: var(--muted); font-size: .9rem; border-top: 1px solid #2d323c; padding-top: 1.5rem; }
+        footer a { color: var(--accent); }
+        kbd { font-family: ui-monospace, SF Mono, Menlo, monospace; background: #2a2e38; padding: .05em .4em; border-radius: 4px; font-size: .9em; }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <img src="icon.png" alt="Diffline icon">
+        <div>
+            <h1>Diffline</h1>
+            <p class="tagline" style="margin:0">Compare and merge files and folders. Native, fast, bought once.</p>
+        </div>
+    </header>
+    <p class="tagline">Two files side by side, every change aligned, the exact words that differ highlighted. Take the left or the right version of each change and save. Point it at two folders to see what was added, removed or modified.</p>
+    <div class="cta">
+        <a class="primary" href="https://apps.apple.com/app/diffline/id0000000000">Get it on the Mac App Store</a>
+        <a class="secondary" href="https://github.com/patbonecrusher/diffline/releases">Direct download</a>
+        <a class="secondary" href="https://github.com/patbonecrusher/diffline">Source on GitHub</a>
+    </div>
+    <div class="shots">
+        <img src="screenshot-1.png" alt="Side-by-side comparison of two source files with highlighted changes">
+        <img src="screenshot-2.png" alt="Folder comparison listing added, removed and modified files">
+    </div>
+    <section class="features">
+        <div class="feature"><h3>Aligned, word by word</h3><p>Changed lines sit next to each other and the words that differ are highlighted. Long lines wrap on both sides without breaking the alignment.</p></div>
+        <div class="feature"><h3>Merge with one click</h3><p>Arrows in the center gutter copy a change left or right. Undo is always one <kbd>⌘Z</kbd> away, and <kbd>⌘S</kbd> writes the result back.</p></div>
+        <div class="feature"><h3>Folders too</h3><p>Compare two folders recursively, filter to differences, and double-click any file to open it side by side.</p></div>
+        <div class="feature"><h3>Noise control</h3><p>Ignore trailing or all whitespace, case, or blank lines when that is what matters.</p></div>
+        <div class="feature"><h3>Patches</h3><p>Export or copy a unified diff for any comparison, ready for <kbd>git apply</kbd> or a code review.</p></div>
+        <div class="feature"><h3>Fits the Mac</h3><p>Drop two items on the window or Dock icon, pick <em>Compare with Diffline</em> in Finder, use the Services menu, and it runs sandboxed with no network access.</p></div>
+    </section>
+    <footer>
+        <p>Diffline is made by Patrick Laplante. It runs on macOS 14 or later. <a href="privacy.html">Privacy policy</a> · <a href="https://github.com/patbonecrusher/diffline/issues">Support</a></p>
+    </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.build/
+build/
+*.xcodeproj
+.DS_Store
+.swiftpm/
+*.provisionprofile
+*.p12
+*.p8
+*.pkg
+TestFiles/
+Marketing/app-review-demo.mp4
+.release.env
