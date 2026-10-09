@@ -26,7 +26,7 @@ if gh release view "$TAG" >/dev/null 2>&1; then echo "error: release $TAG alread
 echo "==> Tagging and publishing $TAG"
 git tag -a "$TAG" -m "Diffline $VERSION" 2>/dev/null || true
 git push origin "$TAG"
-gh release create "$TAG" "$ZIP" --title "Diffline $VERSION" --generate-notes
+if [[ -f RELEASE_NOTES.md ]]; then gh release create "$TAG" "$ZIP" --title "Diffline $VERSION" --notes-file RELEASE_NOTES.md; else gh release create "$TAG" "$ZIP" --title "Diffline $VERSION" --generate-notes; fi
 
 echo "==> Updating Homebrew cask"
 SHA="$(shasum -a 256 "$ZIP" | cut -d' ' -f1)"
