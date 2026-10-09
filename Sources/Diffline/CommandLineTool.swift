@@ -55,7 +55,9 @@ enum CommandLineTool {
         }
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
-            try script.write(to: url, atomically: true, encoding: .utf8)
+            // Prefer the copy bundled by build.sh (Tools/diffline) so the two never drift; fall back to the embedded text.
+            let text = Bundle.main.url(forResource: "diffline", withExtension: nil).flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? script
+            try text.write(to: url, atomically: true, encoding: .utf8)
             try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
             let alert = NSAlert()
             alert.messageText = "Installed \(url.lastPathComponent)"

@@ -68,6 +68,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN/Diffline" "$APP/Contents/MacOS/Diffline"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+cp Tools/diffline "$APP/Contents/Resources/diffline"      # the command-line tool; File > Install Command Line Tool… copies it out
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
 ICONSET="$BUILD_DIR/AppIcon.iconset"

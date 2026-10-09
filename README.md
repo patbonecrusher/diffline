@@ -17,6 +17,9 @@ Requires Xcode 15+ (macOS 14 deployment target). No Xcode project: it's a Swift 
 assembles the `.app` bundle (Info.plist, generated icon, sandbox entitlements, signature).
 Copy `build/Diffline.app` to `/Applications` to get *Compare with Diffline* in Finder's Services menu.
 
+Install a release: download the notarized zip from [Releases](https://github.com/patbonecrusher/diffline/releases) or
+`brew install --cask patbonecrusher/tap/diffline` (which also puts the `diffline` command on your PATH).
+
 Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 
 ## Features
