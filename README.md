@@ -28,10 +28,32 @@ Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 - Folder comparison: identical / different / left only / right only, differences-only filter, drill into files
 - Comparison options: whitespace (exact, trailing, changes, all), ignore case, ignore blank lines
 - Export Unified Diff… (⇧⌘E) and Copy Unified Diff (⌥⌘C)
+- Three-way merge (File > Merge Files…): base, mine and theirs side by side with the merged result in
+  the middle. Non-overlapping changes merge by themselves; conflicts are stepped through (⇧⌘↓ / ⇧⌘↑)
+  and resolved with Take Left, Take Right, Both or Base, with Undo. Unresolved conflicts save with
+  git-style markers.
+- A `diffline` command-line tool (File > Install Command Line Tool…) for `git difftool` and
+  `git mergetool`; see below
 - Open by dropping two items on the start window or the Dock icon, `open -a Diffline a b`, or the
   Finder service *Compare with Diffline*; Recent comparisons use security-scoped bookmarks
 - Binary files are detected and compared byte for byte
 - Files with tens of thousands of lines stay responsive: only visible rows are laid out
+
+## git integration
+
+Install the tool with File > Install Command Line Tool… (put it somewhere on your PATH), then:
+
+```sh
+git config --global merge.tool diffline
+git config --global mergetool.diffline.cmd 'diffline --merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"'
+git config --global mergetool.diffline.trustExitCode false
+git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'
+```
+
+`git mergetool` then opens each conflicted file in Diffline and waits until its window closes. The
+script launches the app through `open -W -n` with the files as open arguments, which is what lets a
+sandboxed app read and write them; `--args --merge … --quit-on-close` tells the app which file is which
+and to quit when done.
 
 ## Layout
 
@@ -41,6 +63,9 @@ Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 | `Sources/DiffCore/LineDiff.swift` | Line splitting, normalization options, aligned rows and hunks, intra-line highlights, unified diff output |
 | `Sources/DiffCore/FolderCompare.swift` | Recursive folder comparison with content compare and cancellation |
 | `Sources/DiffCore/Syntax.swift` | Language definitions and the line-state tokenizer behind syntax coloring |
+| `Sources/DiffCore/ThreeWay.swift` | diff3-style three-way merge: chunk classification and output with conflict markers |
+| `Sources/Diffline/MergeSession.swift`, `MergeView.swift`, `MergeDocumentView.swift` | The merge window: resolutions, navigation, the column view |
+| `Sources/Diffline/CommandLineTool.swift` | The `diffline` script and its installer, launch-argument parsing |
 | `Sources/Diffline/DifflineApp.swift` | App entry, app delegate (open URLs, Services provider), start window scene |
 | `Sources/Diffline/WindowManager.swift` | AppKit comparison windows, key-window tracking for menu commands |
 | `Sources/Diffline/FileCompareSession.swift` | Per-window state: files, diff, navigation, merge with undo, save, export |

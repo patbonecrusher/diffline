@@ -4,3 +4,6 @@ To test: File > Compare Files… and choose any two text files (or drop two file
 Use ⌘↓ / ⌘↑ to step through changes, the arrows in the center gutter (or Changes > Take Left / Take Right) to merge a change, and ⌘S to save.
 File > Compare Folders… lists added, removed and modified files between two folders; double-click a file to compare it.
 Sample files for a quick test are in the public repo: https://github.com/patbonecrusher/diffline/tree/main/Samples
+
+Three-way merge: File > Merge Files…, choose any three text files as Left, Base and Right (for example Samples/merge/mine.py, base.py, theirs.py from the repo). Conflicts are resolved with the Take Left / Both / Base / Take Right buttons and saved with ⌘S.
+File > Install Command Line Tool… writes a small shell script to a location the user picks; it only launches the app via `open`.

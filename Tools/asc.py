@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 LISTING = {
     "description": (
-        "Compare and merge files and folders, one-time purchase, no subscription.\n\n"
+        "Compare and merge files and folders, including three-way merges for git. One-time purchase, no subscription.\n\n"
         "Diffline shows two text files side by side with every changed line aligned, the exact words that "
         "differ highlighted, and long lines wrapped so nothing is hidden off screen. Step through the "
         "changes, take the left or right version of each one, and save. Compare two folders to see which "
@@ -40,6 +40,8 @@ LISTING = {
         "• Side-by-side comparison with word-level highlighting\n"
         "• Syntax coloring for Swift, Python, JavaScript, Go, Rust, C, JSON, YAML, HTML, Markdown and more\n"
         "• Merge: take the left or right version of each change, with Undo\n"
+        "• Three-way merge: base, yours and theirs with the result in the middle; only real conflicts need a decision\n"
+        "• Works as git mergetool and git difftool through the included command-line tool\n"
         "• Folder comparison with recursive status for every file\n"
         "• Ignore whitespace, case or blank lines\n"
         "• Wrapped lines stay aligned on both sides\n"
@@ -49,7 +51,7 @@ LISTING = {
         "Everything runs on your Mac. No accounts, no tracking, no network access."
     ),
     "promotionalText": "A native diff and merge tool for the Mac. Buy it once.",
-    "keywords": "diff,compare,merge,folder,files,text,code,difference,patch,syntax",
+    "keywords": "diff,compare,merge,git,mergetool,folder,files,code,patch,conflict",
     "supportUrl": "https://github.com/patbonecrusher/diffline/issues",
     "marketingUrl": "https://patbonecrusher.github.io/diffline/",
     "whatsNew": None,          # not allowed on the first version

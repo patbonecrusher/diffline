@@ -12,6 +12,10 @@ final class AppState: ObservableObject {
     @Published var folderSession: FolderCompareSession? {
         didSet { folderForward = folderSession?.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() } }
     }
+    @Published var mergeSession: MergeSession? {
+        didSet { mergeForward = mergeSession?.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() } }
+    }
+    private var mergeForward: AnyCancellable?
     // Menu commands observe AppState only, so changes inside the active session are forwarded.
     private var fileForward: AnyCancellable?
     private var folderForward: AnyCancellable?
@@ -21,6 +25,7 @@ final class AppState: ObservableObject {
 final class CompareWindowController: NSWindowController, NSWindowDelegate {
     var fileSession: FileCompareSession?
     var folderSession: FolderCompareSession?
+    var mergeSession: MergeSession?
     private var cancellables: Set<AnyCancellable> = []
 
     init<Content: View>(content: Content, title: String, subtitle: String, size: NSSize, autosaveName: String) {
@@ -48,26 +53,49 @@ final class CompareWindowController: NSWindowController, NSWindowDelegate {
             .store(in: &cancellables)
     }
 
+    func bind(_ session: MergeSession) {
+        mergeSession = session
+        session.undoManager = window?.undoManager
+        session.$isDirty.removeDuplicates()
+            .sink { [weak self] dirty in self?.window?.isDocumentEdited = dirty }
+            .store(in: &cancellables)
+    }
+
     func windowDidBecomeKey(_ notification: Notification) {
         AppState.shared.fileSession = fileSession
         AppState.shared.folderSession = folderSession
+        AppState.shared.mergeSession = mergeSession
     }
 
     func windowDidResignKey(_ notification: Notification) {
         if AppState.shared.fileSession === fileSession { AppState.shared.fileSession = nil }
         if AppState.shared.folderSession === folderSession { AppState.shared.folderSession = nil }
+        if AppState.shared.mergeSession === mergeSession { AppState.shared.mergeSession = nil }
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
-        guard let s = fileSession, s.isDirty else { return true }
+        if let s = fileSession, s.isDirty {
+            return confirmClose(message: "Save changes to the compared files?",
+                                detail: "Changes you merged will be lost if you don't save them.",
+                                save: { s.save(); return !s.isDirty })
+        }
+        if let m = mergeSession, m.isDirty {
+            return confirmClose(message: "Save the merged result?",
+                                detail: "Your resolutions will be lost if you don't save them.",
+                                save: { var ok = false; m.save { ok = $0 }; return ok || !m.isDirty })
+        }
+        return true
+    }
+
+    private func confirmClose(message: String, detail: String, save: () -> Bool) -> Bool {
         let alert = NSAlert()
-        alert.messageText = "Save changes to the compared files?"
-        alert.informativeText = "Changes you merged will be lost if you don't save them."
+        alert.messageText = message
+        alert.informativeText = detail
         alert.addButton(withTitle: "Save")
         alert.addButton(withTitle: "Cancel")
         alert.addButton(withTitle: "Don't Save")
         switch alert.runModal() {
-        case .alertFirstButtonReturn: s.save(); return !s.isDirty
+        case .alertFirstButtonReturn: return save()
         case .alertSecondButtonReturn: return false
         default: return true
         }
@@ -84,6 +112,8 @@ final class WindowManager {
     private var controllers: [NSWindowController] = []
     /// Set by the start window's view when it first appears (SwiftUI owns that scene).
     var openStartWindow: (() -> Void)?
+    /// Launched by the command-line tool: quit once the last comparison or merge window closes.
+    var quitOnClose = false
 
     var hasComparisonWindows: Bool { !controllers.isEmpty }
 
@@ -163,6 +193,27 @@ final class WindowManager {
 
     func forget(_ c: NSWindowController) {
         controllers.removeAll { $0 === c }
+        if quitOnClose && controllers.isEmpty { NSApp.terminate(nil) }
+    }
+
+    func openMerge(base: URL, left: URL, right: URL, output: URL?, leftLabel: String? = nil, rightLabel: String? = nil) {
+        do {
+            let session = try MergeSession(baseURL: base, leftURL: left, rightURL: right, output: output, leftLabel: leftLabel, rightLabel: rightLabel)
+            let c = CompareWindowController(content: MergeView(session: session), title: session.title,
+                                            subtitle: (output ?? left).deletingLastPathComponent().path(percentEncoded: false),
+                                            size: NSSize(width: 1300, height: 760), autosaveName: "Merge")
+            c.bind(session)
+            present(c)
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.messageText = "Couldn't open the files to merge"
+            alert.runModal()
+        }
+    }
+
+    func showStart(mode: StartMode) {
+        showStart()
+        DispatchQueue.main.async { NotificationCenter.default.post(name: .startMode, object: mode) }
     }
 
     // MARK: Panels used by menu commands

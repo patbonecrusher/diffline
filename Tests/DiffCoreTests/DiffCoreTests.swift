@@ -293,3 +293,70 @@ final class SyntaxTests: XCTestCase {
         XCTAssertNil(Language.detect(filename: "notes.txt"))
     }
 }
+
+final class ThreeWayTests: XCTestCase {
+    private func lines(_ s: String) -> [Substring] { LineDiff.lines(of: s) }
+
+    func testNonOverlappingChangesMergeAutomatically() {
+        let base = lines("a\nb\nc\nd\ne\n")
+        let left = lines("a\nB\nc\nd\ne\n")        // left changed line 2
+        let right = lines("a\nb\nc\nd\nE\n")       // right changed line 5
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .leftOnly, .stable, .rightOnly])
+        XCTAssertFalse(m.hasConflicts)
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [:]).map(String.init), ["a", "B", "c", "d", "E"])
+    }
+
+    func testConflict() {
+        let base = lines("a\nb\nc\n")
+        let left = lines("a\nL\nc\n")
+        let right = lines("a\nR\nc\n")
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .conflict, .stable])
+        XCTAssertEqual(m.conflicts, [1])
+        let marked = m.output(base: base, left: left, right: right, resolutions: [:]).map(String.init)
+        XCTAssertEqual(marked, ["a", "<<<<<<< ours", "L", "=======", "R", ">>>>>>> theirs", "c"])
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [1: .right]).map(String.init), ["a", "R", "c"])
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [1: .both]).map(String.init), ["a", "L", "R", "c"])
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [1: .base]).map(String.init), ["a", "b", "c"])
+    }
+
+    func testSameChangeOnBothSides() {
+        let base = lines("a\nb\n"), left = lines("a\nX\n"), right = lines("a\nX\n")
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .bothSame])
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [:]).map(String.init), ["a", "X"])
+    }
+
+    func testInsertionsBeforeAnAnchor() {
+        let base = lines("a\nb\n")
+        let left = lines("a\nL1\nL2\nb\n")          // inserted before b
+        let right = lines("a\nb\nR\n")              // appended at end
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .leftOnly, .stable, .rightOnly])
+        XCTAssertEqual(m.output(base: base, left: left, right: right, resolutions: [:]).map(String.init), ["a", "L1", "L2", "b", "R"])
+    }
+
+    func testDeletionOnOneSideAndEditOnTheOtherConflicts() {
+        let base = lines("a\nb\nc\n")
+        let left = lines("a\nc\n")                  // deleted b
+        let right = lines("a\nb2\nc\n")             // edited b
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .conflict, .stable])
+        XCTAssertEqual(m.chunks[1].left, 1..<1)
+        XCTAssertEqual(m.chunks[1].right, 1..<2)
+    }
+
+    func testBothSidesInsertDifferentThingsAtTheSamePlace() {
+        let base = lines("a\nb\n"), left = lines("a\nL\nb\n"), right = lines("a\nR\nb\n")
+        let m = ThreeWayMerge.merge(base: base, left: left, right: right)
+        XCTAssertEqual(m.chunks.map(\.kind), [.stable, .conflict, .stable])
+        XCTAssertEqual(m.chunks[1].base, 1..<1)
+    }
+
+    func testEmptyInputs() {
+        let m = ThreeWayMerge.merge(base: [], left: lines("x\n"), right: [])
+        XCTAssertEqual(m.chunks.map(\.kind), [.leftOnly])
+        XCTAssertTrue(ThreeWayMerge.merge(base: [], left: [], right: []).chunks.isEmpty)
+    }
+}

@@ -1,0 +1,34 @@
+#!/bin/sh
+# diffline — command-line launcher for Diffline.app
+#   diffline A B                                 compare two files or folders
+#   diffline --wait A B                          …and wait until the window is closed (git difftool)
+#   diffline --merge BASE LOCAL REMOTE [MERGED]  three-way merge; waits until done (git mergetool)
+#
+# git setup:
+#   git config --global merge.tool diffline
+#   git config --global mergetool.diffline.cmd 'diffline --merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"'
+#   git config --global mergetool.diffline.trustExitCode false
+#   git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'
+set -e
+APP="Diffline"
+abs() { case "$1" in /*) printf '%s\n' "$1" ;; *) printf '%s/%s\n' "$(pwd)" "$1" ;; esac; }
+case "${1:-}" in
+  --merge)
+    [ $# -ge 4 ] || { echo "usage: diffline --merge BASE LOCAL REMOTE [MERGED]" >&2; exit 2; }
+    BASE=$(abs "$2"); LOCAL=$(abs "$3"); REMOTE=$(abs "$4")
+    if [ -n "${5:-}" ]; then
+      MERGED=$(abs "$5")
+      [ -e "$MERGED" ] || : > "$MERGED"
+      exec open -W -n -a "$APP" "$BASE" "$LOCAL" "$REMOTE" "$MERGED" --args --quit-on-close --merge "$BASE" "$LOCAL" "$REMOTE" --output "$MERGED"
+    fi
+    exec open -W -n -a "$APP" "$BASE" "$LOCAL" "$REMOTE" --args --quit-on-close --merge "$BASE" "$LOCAL" "$REMOTE" ;;
+  --wait)
+    [ $# -ge 3 ] || { echo "usage: diffline --wait A B" >&2; exit 2; }
+    exec open -W -n -a "$APP" "$(abs "$2")" "$(abs "$3")" --args --quit-on-close ;;
+  -h|--help|"")
+    sed -n '2,11p' "$0"; exit 0 ;;
+  *)
+    [ $# -ge 2 ] || { echo "usage: diffline A B" >&2; exit 2; }
+    exec open -a "$APP" "$(abs "$1")" "$(abs "$2")" ;;
+esac
+
