@@ -211,7 +211,8 @@ final class MergeSession: ObservableObject {
     private func write(to url: URL, completion: ((Bool) -> Void)?) {
         do {
             guard let data = mergedText.data(using: left.encoding) ?? mergedText.data(using: .utf8) else { return }
-            try data.write(to: url, options: .atomic)
+            let target = url.resolvingSymlinksInPath()
+            do { try data.write(to: target, options: .atomic) } catch { try data.write(to: target) }
             isDirty = false
             errorMessage = nil
             completion?(true)

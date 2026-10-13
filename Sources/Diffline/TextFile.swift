@@ -14,8 +14,27 @@ struct TextFile {
 
     var name: String { url.lastPathComponent }
 
+    /// An error that names the file and says why it couldn't be read.
+    struct LoadError: LocalizedError {
+        var url: URL
+        var reason: String
+        var errorDescription: String? { "Diffline can't read “\(url.lastPathComponent)”." }
+        var failureReason: String? { reason + "." }
+        var recoverySuggestion: String? {
+            if reason.contains("outside the folders") {
+                return "git difftool --dir-diff links to your working tree. Update the diffline command (File › Install Command Line Tool…, or brew upgrade) so it passes those files on, or run git difftool with --no-symlinks."
+            }
+            return nil
+        }
+    }
+
     static func load(_ url: URL) throws -> TextFile {
-        let data = try Data(contentsOf: url)
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            throw LoadError(url: url, reason: FileProblem.describe(error, url: url, isLink: false))
+        }
         let probe = data.prefix(8192)
         if probe.contains(0) {
             return TextFile(url: url, lines: [], lineEnding: "\n", trailingNewline: false, encoding: .utf8, isBinary: true, data: data)
@@ -55,7 +74,14 @@ struct TextFile {
 
     func write() throws {
         guard let out = text.data(using: encoding) ?? text.data(using: .utf8) else { return }
-        try out.write(to: url, options: .atomic)
+        // Write through symbolic links (git difftool --dir-diff) so the real file changes, not the link.
+        let target = url.resolvingSymlinksInPath()
+        do {
+            try out.write(to: target, options: .atomic)
+        } catch {
+            // Access granted to just the file (not its folder) can rule out the temporary file an atomic write needs.
+            try out.write(to: target)
+        }
     }
 
     /// Expands tabs to spaces for display and intra-line comparison.

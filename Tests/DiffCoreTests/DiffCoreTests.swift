@@ -360,3 +360,34 @@ final class ThreeWayTests: XCTestCase {
         XCTAssertTrue(ThreeWayMerge.merge(base: [], left: [], right: []).chunks.isEmpty)
     }
 }
+
+final class FolderCompareLinkTests: XCTestCase {
+    func testFollowsFileLinksAndFlagsUnreadableInsteadOfFailing() throws {
+        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let l = tmp.appendingPathComponent("left"), r = tmp.appendingPathComponent("right"), w = tmp.appendingPathComponent("worktree")
+        for d in [l, r, w] { try FileManager.default.createDirectory(at: d, withIntermediateDirectories: true) }
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: l.appendingPathComponent("locked.txt").path)
+            try? FileManager.default.removeItem(at: tmp)
+        }
+        // Like git difftool --dir-diff: the right side links into the working tree.
+        try "same\n".write(to: l.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        try "same\n".write(to: w.appendingPathComponent("a.txt"), atomically: true, encoding: .utf8)
+        try FileManager.default.createSymbolicLink(at: r.appendingPathComponent("a.txt"), withDestinationURL: w.appendingPathComponent("a.txt"))
+        // A dangling link and an unreadable file.
+        try "x\n".write(to: l.appendingPathComponent("gone.txt"), atomically: true, encoding: .utf8)
+        try FileManager.default.createSymbolicLink(at: r.appendingPathComponent("gone.txt"), withDestinationURL: w.appendingPathComponent("missing.txt"))
+        try "secret\n".write(to: l.appendingPathComponent("locked.txt"), atomically: true, encoding: .utf8)
+        try "secret\n".write(to: r.appendingPathComponent("locked.txt"), atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: l.appendingPathComponent("locked.txt").path)
+
+        let root = try FolderComparer(left: l, right: r).run()
+        let byName = Dictionary(uniqueKeysWithValues: root.children!.map { ($0.name, $0) })
+        XCTAssertEqual(byName["a.txt"]?.status, .same, "a link to identical content compares as the same")
+        XCTAssertEqual(byName["a.txt"]?.rightSize, 5)
+        XCTAssertEqual(byName["gone.txt"]?.status, .unreadable)
+        XCTAssertTrue(byName["gone.txt"]?.problem?.contains("doesn't exist") ?? false, byName["gone.txt"]?.problem ?? "")
+        XCTAssertEqual(byName["locked.txt"]?.status, .unreadable)
+        XCTAssertNotNil(byName["locked.txt"]?.problem)
+    }
+}

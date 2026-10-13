@@ -78,6 +78,7 @@ struct FolderCompareView: View {
             TableColumn("Status") { row in
                 Label(statusTitle(row.entry.status), systemImage: statusSymbol(row.entry.status))
                     .foregroundStyle(statusColor(row.entry.status))
+                    .help(row.entry.problem ?? "")
             }
             .width(min: 90, ideal: 110)
             TableColumn("Left Size") { row in Text(size(row.entry.leftSize)).foregroundStyle(.secondary).monospacedDigit() }
@@ -145,6 +146,7 @@ struct FolderCompareView: View {
         case .different: "Different"
         case .leftOnly: "Left only"
         case .rightOnly: "Right only"
+        case .unreadable: "Can't read"
         }
     }
     private func statusSymbol(_ s: EntryStatus) -> String {
@@ -153,6 +155,7 @@ struct FolderCompareView: View {
         case .different: "circle.lefthalf.filled"
         case .leftOnly: "arrow.left.circle"
         case .rightOnly: "arrow.right.circle"
+        case .unreadable: "exclamationmark.triangle"
         }
     }
     private func statusColor(_ s: EntryStatus) -> Color {
@@ -161,6 +164,7 @@ struct FolderCompareView: View {
         case .different: .orange
         case .leftOnly: .red
         case .rightOnly: .green
+        case .unreadable: .yellow
         }
     }
 }

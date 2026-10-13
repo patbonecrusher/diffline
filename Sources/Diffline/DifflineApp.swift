@@ -22,6 +22,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let services = ServiceProvider()
     private var launch = LaunchRequest.parse(CommandLine.arguments)
     private var mergeOpened = false
+    private var compareOpened = false
+    /// Every URL handed over so far; Launch Services may deliver a long list in several batches.
+    private var received: [String: URL] = [:]
 
     override init() {
         super.init()
@@ -34,6 +37,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if let c = launch.comparePaths {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [self] in
+                guard !compareOpened else { return }
+                compareOpened = true
+                WindowManager.shared.open(urls: [URL(fileURLWithPath: c.left), URL(fileURLWithPath: c.right)])
+            }
+        }
         // Merge requested on the command line but the files never arrived through Launch Services
         // (an unsandboxed debug run): open them by path.
         if let m = launch.mergePaths {
@@ -65,7 +75,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private static func key(_ p: String) -> String { URL(fileURLWithPath: p).standardizedFileURL.resolvingSymlinksInPath().path }
+
     func application(_ application: NSApplication, open urls: [URL]) {
+        // `diffline A B` with folders containing links: the extra files only grant sandbox access to the
+        // link targets; open just the two named items.
+        if let c = launch.comparePaths {
+            for u in urls { received[Self.key(u.path)] = u }
+            if !compareOpened, let l = received[Self.key(c.left)], let r = received[Self.key(c.right)] {
+                compareOpened = true
+                WindowManager.shared.open(urls: [l, r])
+            }
+            return
+        }
         // A merge launched from the command-line tool: the files arrive through Launch Services (which
         // is what grants the sandbox access to them); the arguments say which is which.
         if let m = launch.mergePaths, !mergeOpened {

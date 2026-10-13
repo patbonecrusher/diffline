@@ -83,6 +83,13 @@ final class FolderCompareSession: ObservableObject {
     func rightURL(for e: FolderEntry) -> URL { rightURL.appendingPathComponent(e.relativePath) }
 
     func open(_ e: FolderEntry) {
+        if e.status == .unreadable {
+            let alert = NSAlert()
+            alert.messageText = "Diffline can't read “\(e.name)”."
+            alert.informativeText = (e.problem ?? "Unknown problem") + "."
+            alert.runModal()
+            return
+        }
         if e.isDirectory {
             WindowManager.shared.openFolderCompare(leftURL(for: e), rightURL(for: e))
         } else if e.status == .different || e.status == .same {

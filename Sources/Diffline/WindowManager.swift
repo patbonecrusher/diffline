@@ -146,9 +146,7 @@ final class WindowManager {
             present(c)
             Recents.add(left: left, right: right, isFolder: false)
         } catch {
-            let alert = NSAlert(error: error)
-            alert.messageText = "Couldn't open the files"
-            alert.runModal()
+            NSAlert(error: error).runModal()
         }
     }
 

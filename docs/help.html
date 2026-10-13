@@ -49,7 +49,7 @@ git config --global mergetool.diffline.cmd 'diffline --merge "$BASE" "$LOCAL" "$
 git config --global mergetool.diffline.trustExitCode false
 git config --global diff.tool diffline
 git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'</code></pre>
-<p>After a merge stops with conflicts, run <code>git mergetool</code>. Each conflicted file opens in Diffline; resolve it, save, and close the window, and git moves on to the next file. <code>git difftool</code> works the same way for reviewing changes.</p>
+<p>After a merge stops with conflicts, run <code>git mergetool</code>. Each conflicted file opens in Diffline; resolve it, save, and close the window, and git moves on to the next file. <code>git difftool</code> works the same way for reviewing changes, one file at a time, and <code>git difftool -d</code> opens the whole change set as a folder comparison. In a <code>-d</code> comparison against your working tree, merges you save go straight into your working files.</p>
 
 <h2>Keyboard shortcuts</h2>
 <div class="table-wrap"><table>
@@ -71,6 +71,13 @@ git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'</
 
 <h2>Options</h2>
 <p>The <strong>Options</strong> menu in each window, and <strong>Settings</strong> (<kbd>⌘,</kbd>) for new windows, control whitespace handling (exact, trailing, changes, all), case, blank lines, syntax highlighting and the language used to color the files, font size, tab width and line wrapping.</p>
+
+<h2>“Diffline can't read” a file</h2>
+<p>Diffline runs in the macOS App Sandbox, so it can open only what you give it. The reason appears in the dialog, or when you hover over <em>Can't read</em> in a folder comparison:</p>
+<ul>
+  <li><strong>A link outside the folders Diffline was given.</strong> Usually <code>git difftool -d</code> with an older <code>diffline</code> command. Run <code>brew upgrade --cask diffline</code>, or <strong>File › Install Command Line Tool…</strong> again.</li>
+  <li><strong>Your user account isn't allowed to read it.</strong> Check the file in Finder with <strong>File › Get Info</strong>; files created with <code>sudo</code> or by a container are a common cause.</li>
+</ul>
 
 <h2>Something wrong?</h2>
 <p>Report it on <a href="https://github.com/patbonecrusher/diffline/issues">GitHub Issues</a>, with the macOS version and, if you can, two small files that show the problem.</p>
