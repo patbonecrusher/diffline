@@ -1,32 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diffline — Privacy Policy</title>
-    <link rel="icon" type="image/png" href="icon.png">
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #15171c; color: #e7eaf0; line-height: 1.7; margin: 0; padding: 3rem 1.5rem; }
-        main { max-width: 680px; margin: 0 auto; }
-        h1 { letter-spacing: -0.02em; }
-        p, li { color: #b9c0cc; }
-        a { color: #7fb0ff; }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Diffline</title>
+<meta name="description" content="Diffline collects no data. Files you compare never leave your Mac.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Diffline">
+<meta property="og:title" content="Privacy Policy · Diffline">
+<meta property="og:description" content="Diffline collects no data. Files you compare never leave your Mac.">
+<meta property="og:url" content="https://patbonecrusher.github.io/diffline/privacy.html">
+<meta property="og:image" content="https://patbonecrusher.github.io/diffline/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<header class="site"><div class="inner">
+  <a class="brand" href="./"><img class="mark" src="icon-64.png" alt="" width="36" height="36">Diffline</a>
+  <nav><a href="./">Overview</a><a href="help.html">Help</a><a href="privacy.html" aria-current="page">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/patbonecrusher/diffline">GitHub</a></nav>
+</div></header>
 <main>
-    <h1>Privacy Policy</h1>
-    <p><strong>Diffline</strong> does not collect, store, or transmit any personal data.</p>
-    <ul>
-        <li>The app has no accounts, analytics, telemetry, or advertising, and makes no network connections.</li>
-        <li>Files and folders you compare are read locally and never leave your Mac. The app runs inside the macOS App Sandbox and only accesses items you open, drop, or save.</li>
-        <li>The Recent list stores references to items you compared, in the app's own container on your Mac. Clear it at any time from the start window.</li>
-        <li>Preferences (such as font size and comparison options) are stored locally in the app's own container.</li>
-    </ul>
-    <p>Because nothing is collected, there is nothing to share with third parties and nothing to request or delete.</p>
-    <p>Questions: <a href="https://github.com/patbonecrusher/diffline/issues">open an issue on GitHub</a>.</p>
-    <p><em>Last updated: October 9, 2026</em></p>
-    <p><a href="index.html">← Back to Diffline</a></p>
+<h1>Privacy Policy</h1>
+<p class="meta">Effective 13 October 2026</p>
+
+<div class="card accent">
+  <p><strong>In short:</strong> Diffline runs on your Mac and nowhere else. It collects nothing, sends nothing, and the developer never receives your files or anything about how you use the app.</p>
+</div>
+
+<h2>Who this covers</h2>
+<p>This policy describes how the Diffline application for macOS ("Diffline", "the app") handles information. Diffline is developed and maintained by an individual developer ("the developer"). It applies to every way of getting the app: the Mac App Store, the direct download, and Homebrew.</p>
+
+<h2>Information Diffline collects</h2>
+<p>None. Diffline has no accounts, analytics, telemetry, crash reporting, or advertising, and it makes no network connections.</p>
+
+<h2>Files you open</h2>
+<p>Diffline runs inside the macOS App Sandbox. It can read only the files and folders you choose, drop on it, or hand to it from Finder or the <code>diffline</code> command, and it writes only when you save a merge or export a diff. File contents are processed in memory on your Mac and are never transmitted.</p>
+
+<h2>Information stored on your Mac</h2>
+<div class="table-wrap"><table>
+  <tr><th>Data</th><th>Why</th><th>How to remove it</th></tr>
+  <tr><td>Recent comparisons</td><td>To reopen them from the start window. Stored as macOS security-scoped bookmarks, which record where the items are.</td><td>Click <strong>Clear</strong> under Recent on the start window.</td></tr>
+  <tr><td>Preferences</td><td>Font size, comparison options and similar settings.</td><td>Delete the app, or remove <code>~/Library/Containers/com.patlaplante.Diffline</code>.</td></tr>
+</table></div>
+<p>This data lives in the app's own sandbox container on your Mac. It is not synced or shared.</p>
+
+<h2>The command-line tool</h2>
+<p>The optional <code>diffline</code> command is a short shell script that passes file paths to the app through macOS's <code>open</code> command. It does not collect or send anything.</p>
+
+<h2>Third parties</h2>
+<p>Diffline contains no third-party code and shares nothing with anyone. If you download Diffline from the Mac App Store, GitHub or Homebrew, those services' own privacy policies cover the download itself.</p>
+
+<h2>Children</h2>
+<p>Diffline does not collect personal information from anyone, including children.</p>
+
+<h2>Changes</h2>
+<p>If Diffline's handling of information ever changes, this page will be updated before the release that changes it, and the effective date above will change.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy can be sent to the developer through <a href="https://github.com/patbonecrusher/diffline/issues">GitHub Issues</a>.</p>
 </main>
+<footer class="site"><div class="inner">
+  <a href="./">Overview</a><a href="help.html">Help</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="https://github.com/patbonecrusher/diffline/releases">Releases</a>
+  <p>Diffline is an independent project by Patrick Laplante. Git is a trademark of Software Freedom Conservancy. Mac and macOS are trademarks of Apple Inc.</p>
+</div></footer>
 </body>
 </html>

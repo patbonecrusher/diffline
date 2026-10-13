@@ -1,5 +1,7 @@
 # Diffline
 
+Website: https://patbonecrusher.github.io/diffline/ · Help: https://patbonecrusher.github.io/diffline/help.html
+
 A native macOS diff and merge tool, written in Swift (SwiftUI + AppKit). Compares two text files side by
 side with every changed line aligned and the differing words highlighted, merges changes in either
 direction, and compares folders recursively.
@@ -79,6 +81,9 @@ and to quit when done.
 | `Sources/Diffline/Commands.swift` | File / Changes / View menus |
 | `Tools/MakeIcon` | Generates the app icon at build time |
 | `Tools/asc.py` | App Store Connect listing automation |
+| `Tools/release.sh` | Notarized build → GitHub release → Homebrew cask |
+| `Design/icon.svg` | Web version of the icon (mirrors `Tools/MakeIcon`); `Design/build-site-assets.sh` renders the favicons and social card into `docs/` |
+| `docs/` | The website, deployed by `.github/workflows/pages.yml` |
 
 ## Notes
 

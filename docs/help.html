@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help · Diffline</title>
+<meta name="description" content="How to use Diffline: comparing files and folders, merging, keyboard shortcuts, and git mergetool setup.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Diffline">
+<meta property="og:title" content="Help · Diffline">
+<meta property="og:description" content="How to use Diffline: comparing files and folders, merging, keyboard shortcuts, and git mergetool setup.">
+<meta property="og:url" content="https://patbonecrusher.github.io/diffline/help.html">
+<meta property="og:image" content="https://patbonecrusher.github.io/diffline/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site"><div class="inner">
+  <a class="brand" href="./"><img class="mark" src="icon-64.png" alt="" width="36" height="36">Diffline</a>
+  <nav><a href="./">Overview</a><a href="help.html" aria-current="page">Help</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/patbonecrusher/diffline">GitHub</a></nav>
+</div></header>
+<main>
+<h1>Help</h1>
+<p class="lede">Everything Diffline does, and how to wire it into git.</p>
+
+<h2>Compare two files or folders</h2>
+<ul>
+  <li>Drop two items on the start window, or on Diffline's Dock icon.</li>
+  <li>Choose <strong>File › Compare Files…</strong> (<kbd>⌘O</kbd>) or <strong>Compare Folders…</strong> (<kbd>⇧⌘O</kbd>) and select two items.</li>
+  <li>In Finder, select two items and choose <strong>Services › Compare with Diffline</strong>.</li>
+  <li>In Terminal: <code>diffline left.txt right.txt</code>.</li>
+</ul>
+<p>Removed lines are tinted <span class="diffline del">red</span> on the left and added lines <span class="diffline ins">green</span> on the right. Striped space stands in for lines that exist on only one side, so the rows stay aligned. In a folder comparison, double-click a file to open it side by side.</p>
+
+<h2>Merge changes</h2>
+<p>Each change has two arrows in the strip between the panes. The right arrow copies the left version into the right file; the left arrow does the opposite. Edited files show <em>Edited</em> in their header until you save with <kbd>⌘S</kbd>. <strong>File › Revert to Saved</strong> discards your merges.</p>
+
+<h2>Three-way merge</h2>
+<p>Use this when two people edited the same original file. Choose <strong>File › Merge Files…</strong> (<kbd>⌥⌘O</kbd>) and pick three files: <em>Left</em> (yours), <em>Base</em> (the original) and <em>Right</em> (theirs). Optionally pick where to save the result.</p>
+<p>The window shows your version, the merged result and their version. Changes made on only one side are already applied. For each conflict, choose <strong>Take Left</strong>, <strong>Take Right</strong>, <strong>Both</strong> or <strong>Base</strong>. If you save with conflicts still open, Diffline writes git-style <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> / <code>=======</code> / <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> markers so nothing is lost.</p>
+
+<h2 id="git">Use Diffline with git</h2>
+<p>The Homebrew cask installs the <code>diffline</code> command. If you installed the app another way, choose <strong>File › Install Command Line Tool…</strong> and save it to a folder on your PATH, such as <code>/opt/homebrew/bin</code>. Then run:</p>
+<pre><code>git config --global merge.tool diffline
+git config --global mergetool.diffline.cmd 'diffline --merge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"'
+git config --global mergetool.diffline.trustExitCode false
+git config --global diff.tool diffline
+git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'</code></pre>
+<p>After a merge stops with conflicts, run <code>git mergetool</code>. Each conflicted file opens in Diffline; resolve it, save, and close the window, and git moves on to the next file. <code>git difftool</code> works the same way for reviewing changes.</p>
+
+<h2>Keyboard shortcuts</h2>
+<div class="table-wrap"><table>
+  <tr><th>Action</th><th>Keys</th></tr>
+  <tr><td>New comparison</td><td><kbd>⌘N</kbd></td></tr>
+  <tr><td>Compare files / folders</td><td><kbd>⌘O</kbd> / <kbd>⇧⌘O</kbd></td></tr>
+  <tr><td>Merge files</td><td><kbd>⌥⌘O</kbd></td></tr>
+  <tr><td>Next / previous change</td><td><kbd>⌘↓</kbd> / <kbd>⌘↑</kbd></td></tr>
+  <tr><td>Next / previous conflict</td><td><kbd>⇧⌘↓</kbd> / <kbd>⇧⌘↑</kbd></td></tr>
+  <tr><td>Take left / take right</td><td><kbd>⌥⌘→</kbd> / <kbd>⌥⌘←</kbd></td></tr>
+  <tr><td>Take both / take base</td><td><kbd>⌥⌘B</kbd> / <kbd>⌥⌘0</kbd></td></tr>
+  <tr><td>Save</td><td><kbd>⌘S</kbd></td></tr>
+  <tr><td>Export / copy unified diff</td><td><kbd>⇧⌘E</kbd> / <kbd>⌥⌘C</kbd></td></tr>
+  <tr><td>Wrap lines</td><td><kbd>⌥⌘W</kbd></td></tr>
+  <tr><td>Syntax highlighting</td><td><kbd>⌥⌘H</kbd></td></tr>
+  <tr><td>Show base column (merge)</td><td><kbd>⌥⌘1</kbd></td></tr>
+  <tr><td>Compare again</td><td><kbd>⌘R</kbd></td></tr>
+</table></div>
+
+<h2>Options</h2>
+<p>The <strong>Options</strong> menu in each window, and <strong>Settings</strong> (<kbd>⌘,</kbd>) for new windows, control whitespace handling (exact, trailing, changes, all), case, blank lines, syntax highlighting and the language used to color the files, font size, tab width and line wrapping.</p>
+
+<h2>Something wrong?</h2>
+<p>Report it on <a href="https://github.com/patbonecrusher/diffline/issues">GitHub Issues</a>, with the macOS version and, if you can, two small files that show the problem.</p>
+</main>
+<footer class="site"><div class="inner">
+  <a href="./">Overview</a><a href="help.html">Help</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Service</a><a href="https://github.com/patbonecrusher/diffline/releases">Releases</a>
+  <p>Diffline is an independent project by Patrick Laplante. Git is a trademark of Software Freedom Conservancy. Mac and macOS are trademarks of Apple Inc.</p>
+</div></footer>
+</body>
+</html>
