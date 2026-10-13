@@ -5,6 +5,7 @@ import DiffCore
 struct DiffPaneView: NSViewRepresentable {
     @ObservedObject var session: FileCompareSession
     @AppStorage(Prefs.fontSize) private var fontSize = 12.0
+    @AppStorage(Prefs.showOverview) private var showOverview = true
 
     final class Coordinator {
         var generation = -1
@@ -14,20 +15,13 @@ struct DiffPaneView: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    func makeNSView(context: Context) -> NSScrollView {
-        let scroll = NSScrollView()
-        scroll.hasVerticalScroller = true
-        scroll.hasHorizontalScroller = true
-        scroll.autohidesScrollers = true
-        scroll.borderType = .noBorder
-        scroll.drawsBackground = true
-        scroll.backgroundColor = DiffColors.background
+    func makeNSView(context: Context) -> OverviewContainer {
         let doc = DiffDocumentView(frame: NSRect(x: 0, y: 0, width: 800, height: 10))
         doc.onSelectHunk = { [weak session] in session?.select(hunk: $0) }
         doc.onTakeLeft = { [weak session] in session?.takeLeft(hunk: $0) }
         doc.onTakeRight = { [weak session] in session?.takeRight(hunk: $0) }
-        scroll.documentView = doc
-        scroll.contentView.postsFrameChangedNotifications = true
+        let container = OverviewContainer(document: doc)
+        let scroll = container.scrollView
         context.coordinator.docView = doc
         context.coordinator.observer = NotificationCenter.default.addObserver(
             forName: NSView.frameDidChangeNotification, object: scroll.contentView, queue: .main) { [weak doc, weak scroll] _ in
@@ -35,11 +29,13 @@ struct DiffPaneView: NSViewRepresentable {
             doc.setAvailableWidth(scroll.contentView.bounds.width)
         }
         doc.setAvailableWidth(scroll.contentView.bounds.width)
-        return scroll
+        return container
     }
 
-    func updateNSView(_ scroll: NSScrollView, context: Context) {
+    func updateNSView(_ container: OverviewContainer, context: Context) {
         guard let doc = context.coordinator.docView else { return }
+        let scroll = container.scrollView
+        container.rulerHidden = !showOverview
         doc.font = Prefs.font
         doc.wrap = session.wrapLines
         doc.mergeEnabled = true
@@ -61,7 +57,7 @@ struct DiffPaneView: NSViewRepresentable {
         }
     }
 
-    static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
+    static func dismantleNSView(_ nsView: OverviewContainer, coordinator: Coordinator) {
         if let o = coordinator.observer { NotificationCenter.default.removeObserver(o) }
     }
 }

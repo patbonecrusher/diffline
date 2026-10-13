@@ -28,6 +28,7 @@ Signed / notarized / App Store builds: see [RELEASING.md](RELEASING.md).
 
 - Side-by-side file comparison; long lines wrap on both sides without breaking row alignment
 - Word-level highlighting inside changed lines
+- Change overview beside the scroll bar: every change in the file at a glance, with the visible region; click or drag to jump (⌥⌘M toggles)
 - Syntax coloring for 24 languages (detected from the file name, or pick one from the Language menu)
 - Next/Previous change (⌘↓ / ⌘↑), Take Left / Take Right per change (⌥⌘→ / ⌥⌘←) with Undo, Save (⌘S)
 - Folder comparison: identical / different / left only / right only, differences-only filter, drill into files
@@ -70,6 +71,7 @@ and to quit when done.
 | `Sources/DiffCore/Syntax.swift` | Language definitions and the line-state tokenizer behind syntax coloring |
 | `Sources/DiffCore/ThreeWay.swift` | diff3-style three-way merge: chunk classification and output with conflict markers |
 | `Sources/Diffline/MergeSession.swift`, `MergeView.swift`, `MergeDocumentView.swift` | The merge window: resolutions, navigation, the column view |
+| `Sources/Diffline/OverviewRuler.swift` | The change overview strip and the scroll-view container that hosts it |
 | `Sources/Diffline/CommandLineTool.swift` | The `diffline` script and its installer, launch-argument parsing |
 | `Sources/Diffline/DifflineApp.swift` | App entry, app delegate (open URLs, Services provider), start window scene |
 | `Sources/Diffline/WindowManager.swift` | AppKit comparison windows, key-window tracking for menu commands |

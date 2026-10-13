@@ -27,6 +27,13 @@ enum DiffColors {
     static let attribute = dyn(NSColor(srgbRed: 0.60, green: 0.32, blue: 0.00, alpha: 1), NSColor(srgbRed: 0.99, green: 0.72, blue: 0.34, alpha: 1))
     static let tag = dyn(NSColor(srgbRed: 0.11, green: 0.44, blue: 0.56, alpha: 1), NSColor(srgbRed: 0.36, green: 0.85, blue: 1.00, alpha: 1))
 
+    // Overview ruler: saturated enough to read as thin ticks.
+    static let overviewDeleted = dyn(NSColor(srgbRed: 0.90, green: 0.30, blue: 0.27, alpha: 1), NSColor(srgbRed: 0.95, green: 0.42, blue: 0.38, alpha: 1))
+    static let overviewInserted = dyn(NSColor(srgbRed: 0.18, green: 0.65, blue: 0.33, alpha: 1), NSColor(srgbRed: 0.35, green: 0.80, blue: 0.48, alpha: 1))
+    static let overviewChanged = dyn(NSColor(srgbRed: 0.20, green: 0.45, blue: 0.90, alpha: 1), NSColor(srgbRed: 0.42, green: 0.62, blue: 1.00, alpha: 1))
+    static let overviewConflict = dyn(NSColor(srgbRed: 0.95, green: 0.50, blue: 0.08, alpha: 1), NSColor(srgbRed: 1.00, green: 0.62, blue: 0.20, alpha: 1))
+    static let overviewBoth = dyn(NSColor(srgbRed: 0.55, green: 0.38, blue: 0.85, alpha: 1), NSColor(srgbRed: 0.70, green: 0.55, blue: 1.00, alpha: 1))
+
     static func color(for kind: TokenKind) -> NSColor {
         switch kind {
         case .keyword: keyword
@@ -42,7 +49,7 @@ enum DiffColors {
 
 /// Draws an aligned side-by-side diff: line numbers, both panes and the merge gutter. Only the rows
 /// intersecting the dirty rect are laid out, so files with tens of thousands of lines stay smooth.
-final class DiffDocumentView: NSView {
+final class DiffDocumentView: NSView, OverviewSource {
     enum Side { case left, right }
 
     // Data
@@ -59,7 +66,36 @@ final class DiffDocumentView: NSView {
 
     var wrap = true { didSet { if wrap != oldValue { relayout() } } }
     var font: NSFont = Prefs.font { didSet { if font != oldValue { updateMetrics(); relayout() } } }
-    var currentHunk: Int? { didSet { if currentHunk != oldValue { needsDisplay = true } } }
+    var currentHunk: Int? { didSet { if currentHunk != oldValue { needsDisplay = true; onOverviewChange?() } } }
+    var onOverviewChange: (() -> Void)?
+
+    /// One band per run of same-kind changed rows; the current change is emphasized.
+    var overviewMarks: [OverviewMark] {
+        guard rowY.count == rows.count + 1 else { return [] }
+        var marks: [OverviewMark] = []
+        for (h, hunk) in hunks.enumerated() {
+            var i = hunk.rows.lowerBound
+            while i < hunk.rows.upperBound {
+                let kind = rows[i].kind
+                var j = i + 1
+                while j < hunk.rows.upperBound && rows[j].kind == kind { j += 1 }
+                let color: NSColor
+                switch kind {
+                case .deleted: color = DiffColors.overviewDeleted
+                case .inserted: color = DiffColors.overviewInserted
+                case .changed: color = DiffColors.overviewChanged
+                case .same: color = .clear
+                }
+                marks.append(OverviewMark(y0: rowY[i], y1: rowY[j], color: color))
+                i = j
+            }
+            if h == currentHunk {
+                // Outline the whole current change, across its runs.
+                marks.append(OverviewMark(y0: rowY[hunk.rows.lowerBound], y1: rowY[hunk.rows.upperBound], color: .clear, emphasized: true))
+            }
+        }
+        return marks
+    }
     var onSelectHunk: ((Int) -> Void)?
     var onTakeLeft: ((Int) -> Void)?
     var onTakeRight: ((Int) -> Void)?
@@ -143,6 +179,7 @@ final class DiffDocumentView: NSView {
         let width = wrap ? availableWidth : 2 * (lineNumberWidth + paneWidth) + gutter
         setFrameSize(NSSize(width: max(width, availableWidth), height: max(y, 1)))
         needsDisplay = true
+        onOverviewChange?()
     }
 
     private func rowHeight(_ i: Int) -> CGFloat {

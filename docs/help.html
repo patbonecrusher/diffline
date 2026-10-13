@@ -34,6 +34,7 @@
   <li>In Terminal: <code>diffline left.txt right.txt</code>.</li>
 </ul>
 <p>Removed lines are tinted <span class="diffline del">red</span> on the left and added lines <span class="diffline ins">green</span> on the right. Striped space stands in for lines that exist on only one side, so the rows stay aligned. In a folder comparison, double-click a file to open it side by side.</p>
+<p>The narrow strip beside the scroll bar is the change overview: the whole file shrunk to the window's height, with a mark for every change (red removed, green added, blue modified) and a box around the part on screen. Click or drag in it to jump. In a merge, orange marks are conflicts still waiting for a decision. Hide it with <strong>View › Show Change Overview</strong> (<kbd>⌥⌘M</kbd>).</p>
 
 <h2>Merge changes</h2>
 <p>Each change has two arrows in the strip between the panes. The right arrow copies the left version into the right file; the left arrow does the opposite. Edited files show <em>Edited</em> in their header until you save with <kbd>⌘S</kbd>. <strong>File › Revert to Saved</strong> discards your merges.</p>
@@ -66,6 +67,7 @@ git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'</
   <tr><td>Wrap lines</td><td><kbd>⌥⌘W</kbd></td></tr>
   <tr><td>Syntax highlighting</td><td><kbd>⌥⌘H</kbd></td></tr>
   <tr><td>Show base column (merge)</td><td><kbd>⌥⌘1</kbd></td></tr>
+  <tr><td>Show change overview</td><td><kbd>⌥⌘M</kbd></td></tr>
   <tr><td>Compare again</td><td><kbd>⌘R</kbd></td></tr>
 </table></div>
 

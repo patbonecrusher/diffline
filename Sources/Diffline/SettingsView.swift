@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.tabWidth) private var tabWidth = 4
     @AppStorage(Prefs.wrapLines) private var wrapLines = true
     @AppStorage(Prefs.syntaxHighlighting) private var syntaxHighlighting = true
+    @AppStorage(Prefs.showOverview) private var showOverview = true
     @AppStorage(Prefs.whitespace) private var whitespace = DiffOptions.Whitespace.exact.rawValue
     @AppStorage(Prefs.ignoreCase) private var ignoreCase = false
     @AppStorage(Prefs.ignoreBlankLines) private var ignoreBlankLines = false
@@ -18,6 +19,7 @@ struct SettingsView: View {
                 Stepper("Tab width: \(tabWidth)", value: $tabWidth, in: 1...16)
                 Toggle("Wrap long lines", isOn: $wrapLines)
                 Toggle("Syntax highlighting", isOn: $syntaxHighlighting)
+                Toggle("Change overview beside the scroll bar", isOn: $showOverview)
             }
             Section("Defaults for new comparisons") {
                 Picker("Whitespace", selection: $whitespace) {

@@ -16,7 +16,7 @@ extension DiffColors {
 
 /// Draws the columns of a three-way merge (optionally Base, then Mine, Merged, Theirs) with aligned
 /// rows and two action gutters around the merged column.
-final class MergeDocumentView: NSView {
+final class MergeDocumentView: NSView, OverviewSource {
     enum Role { case base, left, merged, right }
     struct Column {
         var role: Role
@@ -34,7 +34,27 @@ final class MergeDocumentView: NSView {
 
     var wrap = true { didSet { if wrap != oldValue { relayout() } } }
     var font: NSFont = Prefs.font { didSet { if font != oldValue { updateMetrics(); relayout() } } }
-    var currentChunk: Int? { didSet { if currentChunk != oldValue { needsDisplay = true } } }
+    var currentChunk: Int? { didSet { if currentChunk != oldValue { needsDisplay = true; onOverviewChange?() } } }
+    var onOverviewChange: (() -> Void)?
+
+    /// One band per changed chunk: orange for unresolved conflicts, otherwise the side the result came from.
+    var overviewMarks: [OverviewMark] {
+        guard rowY.count == rows.count + 1 else { return [] }
+        var marks: [OverviewMark] = []
+        for c in chunkKinds.indices where chunkKinds[c] != .stable && !chunkRows[c].isEmpty {
+            let r = chunkRows[c]
+            let color: NSColor
+            switch (chunkKinds[c], chunkResolutions[c]) {
+            case (.conflict, nil): color = DiffColors.overviewConflict
+            case (_, .left?), (.leftOnly, _): color = DiffColors.overviewChanged
+            case (_, .right?), (.rightOnly, _): color = DiffColors.overviewInserted
+            case (_, .both?), (_, .bothReversed?), (.bothSame, _): color = DiffColors.overviewBoth
+            default: color = NSColor.tertiaryLabelColor
+            }
+            marks.append(OverviewMark(y0: rowY[r.lowerBound], y1: rowY[r.upperBound], color: color, emphasized: c == currentChunk))
+        }
+        return marks
+    }
     var onSelectChunk: ((Int) -> Void)?
     var onResolve: ((Int, Resolution) -> Void)?
 
@@ -126,6 +146,7 @@ final class MergeDocumentView: NSView {
         rowY = ys
         setFrameSize(NSSize(width: max(x, availableWidth), height: max(y, 1)))
         needsDisplay = true
+        onOverviewChange?()
     }
 
     private func rowHeight(_ i: Int) -> CGFloat {

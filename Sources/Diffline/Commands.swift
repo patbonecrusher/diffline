@@ -78,6 +78,9 @@ struct DifflineCommands: Commands {
                                                 set: { file?.wrapLines = $0; merge?.wrapLines = $0 }))
                 .keyboardShortcut("w", modifiers: [.command, .option])
                 .disabled(file == nil && merge == nil)
+            Toggle("Show Change Overview", isOn: Binding(get: { UserDefaults.standard.bool(forKey: Prefs.showOverview) },
+                                                         set: { UserDefaults.standard.set($0, forKey: Prefs.showOverview) }))
+                .keyboardShortcut("m", modifiers: [.command, .option])
             Toggle("Show Base", isOn: Binding(get: { merge?.showBase ?? false }, set: { merge?.showBase = $0 }))
                 .keyboardShortcut("1", modifiers: [.command, .option])
                 .disabled(merge == nil)
