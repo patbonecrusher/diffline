@@ -10,6 +10,7 @@ enum CommandLineTool {
     #   diffline A B                                 compare two files or folders
     #   diffline --wait A B                          …and wait until the window is closed (git difftool, also -d)
     #   diffline --merge BASE LOCAL REMOTE [MERGED]  three-way merge; waits until done (git mergetool)
+    #   diffline --version                           which Diffline.app this command launches
     #
     # git setup:
     #   git config --global merge.tool diffline
@@ -19,7 +20,14 @@ enum CommandLineTool {
     #   git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'
     emulate -L zsh
     set -e
-    APP="Diffline"
+    # Launch the app this script belongs to (Homebrew and Install Command Line Tool… link to the copy inside
+    # Diffline.app), so an older Diffline elsewhere on the disk can never be picked by mistake.
+    SELF=${0:A}
+    if [[ $SELF == */Diffline.app/Contents/Resources/diffline ]]; then
+      APP=${SELF%/Contents/Resources/diffline}
+    else
+      APP="Diffline"
+    fi
 
     abs() { [[ $1 == /* ]] && print -r -- "$1" || print -r -- "$PWD/$1" }
 
@@ -59,8 +67,15 @@ enum CommandLineTool {
       --wait)
         (( $# >= 3 )) || { print -u2 "usage: diffline --wait A B"; exit 2 }
         compare 1 "$2" "$3" ;;
+      --version)
+        if [[ -d $APP ]]; then
+          print -r -- "$APP $(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
+        else
+          print -r -- "launches the Diffline found by macOS (this script is not inside an app bundle: $SELF)"
+        fi
+        exit 0 ;;
       -h|--help|"")
-        sed -n '2,12p' "$0"; exit 0 ;;
+        sed -n '2,13p' "$0"; exit 0 ;;
       *)
         (( $# >= 2 )) || { print -u2 "usage: diffline A B"; exit 2 }
         compare 0 "$1" "$2" ;;
@@ -82,10 +97,20 @@ enum CommandLineTool {
         }
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
-            // Prefer the copy bundled by build.sh (Tools/diffline) so the two never drift; fall back to the embedded text.
-            let text = Bundle.main.url(forResource: "diffline", withExtension: nil).flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? script
-            try text.write(to: url, atomically: true, encoding: .utf8)
-            try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+            if fm.fileExists(atPath: url.path) || (try? url.checkResourceIsReachable()) == true || (try? fm.destinationOfSymbolicLink(atPath: url.path)) != nil {
+                try? fm.removeItem(at: url)
+            }
+            // Link to the script inside the app, so updating the app updates the command too. Fall back to a
+            // copy (for example when the app isn't in a permanent place).
+            if let bundled = Bundle.main.url(forResource: "diffline", withExtension: nil),
+               !bundled.path.contains("/AppTranslocation/"),
+               (try? fm.createSymbolicLink(at: url, withDestinationURL: bundled)) != nil {
+                // linked
+            } else {
+                let text = Bundle.main.url(forResource: "diffline", withExtension: nil).flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? script
+                try text.write(to: url, atomically: true, encoding: .utf8)
+                try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
+            }
             let alert = NSAlert()
             alert.messageText = "Installed \(url.lastPathComponent)"
             alert.informativeText = "Run `diffline --help` in Terminal for usage, including the git mergetool and difftool configuration."

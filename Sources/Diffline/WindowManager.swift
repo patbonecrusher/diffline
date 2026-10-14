@@ -145,6 +145,14 @@ final class WindowManager {
             c.bind(session)
             present(c)
             Recents.add(left: left, right: right, isFolder: false)
+        } catch let error as TextFile.LoadError {
+            if let target = error.outsideLinkTarget {
+                if AccessGrants.requestAccess(fileName: error.url.lastPathComponent, linkTarget: target) {
+                    openFileCompare(left, right)
+                }
+            } else {
+                NSAlert(error: error).runModal()
+            }
         } catch {
             NSAlert(error: error).runModal()
         }

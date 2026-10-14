@@ -83,6 +83,13 @@ final class FolderCompareSession: ObservableObject {
     func rightURL(for e: FolderEntry) -> URL { rightURL.appendingPathComponent(e.relativePath) }
 
     func open(_ e: FolderEntry) {
+        if e.status == .unreadable, e.problem?.contains("outside the folders") == true {
+            // Find which side is the link, and ask for its target's folder once.
+            for url in [leftURL(for: e), rightURL(for: e)] where (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true {
+                if AccessGrants.requestAccess(fileName: e.name, linkTarget: FileProblem.linkTarget(of: url)) { run() }
+                return
+            }
+        }
         if e.status == .unreadable {
             let alert = NSAlert()
             alert.messageText = "Diffline can't read “\(e.name)”."

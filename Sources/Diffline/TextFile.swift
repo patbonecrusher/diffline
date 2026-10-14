@@ -20,11 +20,9 @@ struct TextFile {
         var reason: String
         var errorDescription: String? { "Diffline can't read “\(url.lastPathComponent)”." }
         var failureReason: String? { reason + "." }
-        var recoverySuggestion: String? {
-            if reason.contains("outside the folders") {
-                return "git difftool --dir-diff links to your working tree. Update the diffline command (File › Install Command Line Tool…, or brew upgrade) so it passes those files on, or run git difftool with --no-symlinks."
-            }
-            return nil
+        /// Set when the file is a link whose target the sandbox won't let Diffline read.
+        var outsideLinkTarget: URL? {
+            reason.contains("outside the folders") ? FileProblem.linkTarget(of: url) : nil
         }
     }
 

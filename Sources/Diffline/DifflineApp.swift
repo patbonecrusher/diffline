@@ -32,6 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        AccessGrants.restore()
         NSApp.servicesProvider = services
         WindowManager.shared.quitOnClose = launch.quitOnClose
     }

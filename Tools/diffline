@@ -3,6 +3,7 @@
 #   diffline A B                                 compare two files or folders
 #   diffline --wait A B                          …and wait until the window is closed (git difftool, also -d)
 #   diffline --merge BASE LOCAL REMOTE [MERGED]  three-way merge; waits until done (git mergetool)
+#   diffline --version                           which Diffline.app this command launches
 #
 # git setup:
 #   git config --global merge.tool diffline
@@ -12,7 +13,14 @@
 #   git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'
 emulate -L zsh
 set -e
-APP="Diffline"
+# Launch the app this script belongs to (Homebrew and Install Command Line Tool… link to the copy inside
+# Diffline.app), so an older Diffline elsewhere on the disk can never be picked by mistake.
+SELF=${0:A}
+if [[ $SELF == */Diffline.app/Contents/Resources/diffline ]]; then
+  APP=${SELF%/Contents/Resources/diffline}
+else
+  APP="Diffline"
+fi
 
 abs() { [[ $1 == /* ]] && print -r -- "$1" || print -r -- "$PWD/$1" }
 
@@ -52,8 +60,15 @@ case "${1:-}" in
   --wait)
     (( $# >= 3 )) || { print -u2 "usage: diffline --wait A B"; exit 2 }
     compare 1 "$2" "$3" ;;
+  --version)
+    if [[ -d $APP ]]; then
+      print -r -- "$APP $(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
+    else
+      print -r -- "launches the Diffline found by macOS (this script is not inside an app bundle: $SELF)"
+    fi
+    exit 0 ;;
   -h|--help|"")
-    sed -n '2,12p' "$0"; exit 0 ;;
+    sed -n '2,13p' "$0"; exit 0 ;;
   *)
     (( $# >= 2 )) || { print -u2 "usage: diffline A B"; exit 2 }
     compare 0 "$1" "$2" ;;

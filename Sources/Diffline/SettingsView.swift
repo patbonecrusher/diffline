@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.ignoreCase) private var ignoreCase = false
     @AppStorage(Prefs.ignoreBlankLines) private var ignoreBlankLines = false
     @AppStorage(Prefs.folderIncludeHidden) private var includeHidden = false
+    @State private var grants = AccessGrants.grantedPaths
 
     var body: some View {
         Form {
@@ -30,6 +31,14 @@ struct SettingsView: View {
             }
             Section("Folders") {
                 Toggle("Include hidden files", isOn: $includeHidden)
+            }
+            Section("Folder access") {
+                if grants.isEmpty {
+                    Text("None. Diffline asks when git difftool -d links to a folder it can't read.").foregroundStyle(.secondary)
+                } else {
+                    ForEach(grants, id: \.self) { Text($0).lineLimit(1).truncationMode(.middle) }
+                    Button("Forget All") { AccessGrants.revokeAll(); grants = [] }
+                }
             }
         }
         .formStyle(.grouped)

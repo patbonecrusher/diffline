@@ -77,7 +77,7 @@ git config --global difftool.diffline.cmd 'diffline --wait "$LOCAL" "$REMOTE"'</
 <h2>“Diffline can't read” a file</h2>
 <p>Diffline runs in the macOS App Sandbox, so it can open only what you give it. The reason appears in the dialog, or when you hover over <em>Can't read</em> in a folder comparison:</p>
 <ul>
-  <li><strong>A link outside the folders Diffline was given.</strong> Usually <code>git difftool -d</code> with an older <code>diffline</code> command. Run <code>brew upgrade --cask diffline</code>, or <strong>File › Install Command Line Tool…</strong> again.</li>
+  <li><strong>A link outside the folders Diffline was given.</strong> This is how <code>git difftool -d</code> works. Diffline offers <strong>Allow Access…</strong>: choose the repository folder once and it is remembered (Settings lists and clears these). An up-to-date <code>diffline</code> command avoids the question entirely; <code>diffline --version</code> shows which app it launches, and <code>which -a diffline</code> shows whether an older copy comes first on your PATH.</li>
   <li><strong>Your user account isn't allowed to read it.</strong> Check the file in Finder with <strong>File › Get Info</strong>; files created with <code>sudo</code> or by a container are a common cause.</li>
 </ul>
 
